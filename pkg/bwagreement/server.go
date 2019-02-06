@@ -50,15 +50,15 @@ type DB interface {
 
 // Server is an implementation of the pb.BandwidthServer interface
 type Server struct {
-	db     DB
-	NodeID storj.NodeID
-	logger *zap.Logger
+	db       DB
+	identity *identity.FullIdentity
+	logger   *zap.Logger
 }
 
 // NewServer creates instance of Server
-func NewServer(db DB, logger *zap.Logger, nodeID storj.NodeID) *Server {
+func NewServer(db DB, logger *zap.Logger, fID *identity.FullIdentity) *Server {
 	// TODO: reorder arguments, rename logger -> log
-	return &Server{db: db, logger: logger, NodeID: nodeID}
+	return &Server{db: db, logger: logger, identity: fID}
 }
 
 // Close closes resources
@@ -78,18 +78,18 @@ func (s *Server) BandwidthAgreements(ctx context.Context, rba *pb.RenterBandwidt
 		return reply, auth.ErrBadID.New("Storage Node ID: %v vs %v", rba.StorageNodeId, pi.ID)
 	}
 	//todo:  use whitelist for uplinks?
-	if pba.SatelliteId != s.NodeID {
-		return reply, pb.ErrPayer.New("Satellite ID: %v vs %v", pba.SatelliteId, s.NodeID)
+	if pba.SatelliteId != s.identity.ID {
+		return reply, pb.ErrPayer.New("Satellite ID: %v vs %v", pba.SatelliteId, s.identity.ID)
 	}
 	exp := time.Unix(pba.GetExpirationUnixSec(), 0).UTC()
 	if exp.Before(time.Now().UTC()) {
 		return reply, pb.ErrPayer.Wrap(auth.ErrExpired.New("%v vs %v", exp, time.Now().UTC()))
 	}
 	//verify message crypto
-	if err := auth.VerifyMsg(rba, pba.UplinkId); err != nil {
+	if err := auth.VerifyMessage(rba, s.identity.Leaf.PublicKey); err != nil {
 		return reply, pb.ErrRenter.Wrap(err)
 	}
-	if err := auth.VerifyMsg(&pba, pba.SatelliteId); err != nil {
+	if err := auth.VerifyMessage(&pba, nil); err != nil {
 		return reply, pb.ErrPayer.Wrap(err)
 	}
 

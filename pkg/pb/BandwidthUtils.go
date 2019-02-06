@@ -39,9 +39,15 @@ func Equal(msg1, msg2 proto.Message) bool {
 	return bytes.Compare(msg1Bytes, msg2Bytes) == 0
 }
 
-//SetCerts updates the certs field, completing the auth.SignedMsg interface
-func (m *PayerBandwidthAllocation) SetCerts(certs [][]byte) {
-	m.Certs = certs
+//Marshal deterministically generates bytes
+func (m *RenterBandwidthAllocation) Marshal() ([]byte, error) {
+	//todo: proto.Marshal isn't deterministic if we ever use Maps
+	return proto.Marshal(m)
+}
+
+//Unmarshal generates structs from bytes
+func (m *RenterBandwidthAllocation) Unmarshal(bytes []byte) error {
+	return proto.Unmarshal(bytes, m)
 }
 
 //SetSignature updates the signature field, completing the auth.SignedMsg interface
@@ -49,9 +55,15 @@ func (m *PayerBandwidthAllocation) SetSignature(signature []byte) {
 	m.Signature = signature
 }
 
-//SetCerts updates the certs field, completing the auth.SignedMsg interface
-func (m *RenterBandwidthAllocation) SetCerts(certs [][]byte) {
-	m.Certs = certs
+//Marshal deterministically generates bytes
+func (m *PayerBandwidthAllocation) Marshal() ([]byte, error) {
+	//todo: proto.Marshal isn't deterministic if we ever use Maps
+	return proto.Marshal(m)
+}
+
+//Unmarshal generates structs from bytes
+func (m *PayerBandwidthAllocation) Unmarshal(bytes []byte) error {
+	return proto.Unmarshal(bytes, m)
 }
 
 //SetSignature updates the signature field, completing the auth.SignedMsg interface

@@ -64,7 +64,7 @@ func testDatabase(ctx context.Context, t *testing.T, bwdb bwagreement.DB) {
 	assert.NoError(t, err)
 	satID, err := testidentity.NewTestIdentity(ctx)
 	assert.NoError(t, err)
-	satellite := bwagreement.NewServer(bwdb, zap.NewNop(), satID.ID)
+	satellite := bwagreement.NewServer(bwdb, zap.NewNop(), satID)
 
 	{ // TestSameSerialNumberBandwidthAgreements
 		pbaFile1, err := testbwagreement.GeneratePayerBandwidthAllocation(pb.BandwidthAction_GET, satID, upID, time.Hour)
